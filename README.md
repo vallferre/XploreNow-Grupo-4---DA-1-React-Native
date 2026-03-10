@@ -1,2 +1,6 @@
-# XploreNow-Grupo-4---DA-1-React-Native
-Trabajo Práctico Obligatorio proyecto XploreNow
+# XploreNow Grupo 4 DA 1 React Nativo
+## Trabajo Práctico Obligatorio proyecto XploreNow
+### Integrantes:
+- Insaurralde Lucas Ciro
+- Lovera Franco
+- Ferreira Valentin
