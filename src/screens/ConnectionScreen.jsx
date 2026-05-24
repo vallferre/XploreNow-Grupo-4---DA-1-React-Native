@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   Animated,
   Easing,
@@ -13,6 +13,7 @@ import {
 import { useFocusEffect } from '@react-navigation/native';
 import PrimaryButton from '../components/PrimaryButton';
 import colors from '../config/colors';
+import { useAuth } from '../hooks/useAuth';
 import { useRobotConnection } from '../hooks/useRobotConnection';
 
 const ROBOTS = [
@@ -58,6 +59,7 @@ const STATE_META = {
 };
 
 export default function ConnectionScreen({ navigation }) {
+  const { logout } = useAuth();
   const {
     robotType,
     setRobotType,
@@ -73,6 +75,7 @@ export default function ConnectionScreen({ navigation }) {
     refreshStatus,
   } = useRobotConnection();
 
+  const [menuOpen, setMenuOpen] = useState(false);
   const headerProgress = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
@@ -125,6 +128,16 @@ export default function ConnectionScreen({ navigation }) {
     }
   };
 
+  const handleProfilePress = () => {
+    setMenuOpen(false);
+    navigation.navigate('Profile');
+  };
+
+  const handleLogoutPress = async () => {
+    setMenuOpen(false);
+    await logout();
+  };
+
   return (
     <View style={styles.flex}>
       <View style={styles.customHeader}>
@@ -147,6 +160,33 @@ export default function ConnectionScreen({ navigation }) {
           ]}
         />
         <Text style={styles.customHeaderTitle}>Conexion</Text>
+        <TouchableOpacity
+          style={styles.headerMenuButton}
+          onPress={() => setMenuOpen((open) => !open)}
+          activeOpacity={0.8}
+        >
+          <Text style={styles.headerMenuIcon}>...</Text>
+        </TouchableOpacity>
+        {menuOpen ? (
+          <View style={styles.headerMenu}>
+            <TouchableOpacity
+              style={styles.headerMenuItem}
+              onPress={handleProfilePress}
+              activeOpacity={0.75}
+            >
+              <Text style={styles.headerMenuText}>Perfil</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.headerMenuItem, styles.headerMenuDangerItem]}
+              onPress={handleLogoutPress}
+              activeOpacity={0.75}
+            >
+              <Text style={[styles.headerMenuText, styles.headerMenuDangerText]}>
+                Salir de la cuenta
+              </Text>
+            </TouchableOpacity>
+          </View>
+        ) : null}
       </View>
 
       <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
@@ -283,8 +323,10 @@ const styles = StyleSheet.create({
     backgroundColor: colors.primary,
     alignItems: 'center',
     justifyContent: 'center',
-    overflow: 'hidden',
+    overflow: 'visible',
     paddingTop: 28,
+    zIndex: 20,
+    elevation: 20,
   },
   customHeaderGlow: {
     position: 'absolute',
@@ -306,6 +348,60 @@ const styles = StyleSheet.create({
     color: colors.white,
     fontSize: 30,
     fontWeight: '800',
+  },
+  headerMenuButton: {
+    position: 'absolute',
+    right: 18,
+    bottom: 26,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(255,255,255,0.16)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.25)',
+  },
+  headerMenuIcon: {
+    color: colors.white,
+    fontSize: 22,
+    fontWeight: '900',
+    lineHeight: 18,
+    marginTop: -8,
+  },
+  headerMenu: {
+    position: 'absolute',
+    right: 16,
+    top: 88,
+    width: 190,
+    backgroundColor: '#101827',
+    borderWidth: 1,
+    borderColor: '#2D3A50',
+    borderRadius: 12,
+    padding: 6,
+    zIndex: 10,
+    elevation: 12,
+    shadowColor: colors.black,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.22,
+    shadowRadius: 14,
+  },
+  headerMenuItem: {
+    borderRadius: 9,
+    paddingHorizontal: 12,
+    paddingVertical: 12,
+  },
+  headerMenuDangerItem: {
+    backgroundColor: '#321419',
+    marginTop: 4,
+  },
+  headerMenuText: {
+    color: colors.white,
+    fontSize: 14,
+    fontWeight: '800',
+  },
+  headerMenuDangerText: {
+    color: '#FF6B6B',
   },
   container: {
     padding: 20,
