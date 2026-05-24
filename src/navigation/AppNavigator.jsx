@@ -6,6 +6,7 @@ import LoginScreen from '../screens/LoginScreen';
 import RegisterScreen from '../screens/RegisterScreen';
 import ConnectionScreen from '../screens/ConnectionScreen';
 import ConnectionDiagnosticsScreen from '../screens/ConnectionDiagnosticsScreen';
+import ProfileScreen from '../screens/ProfileScreen';
 import { RobotConnectionProvider } from '../context/RobotConnectionContext';
 import colors from '../config/colors';
 
@@ -45,6 +46,11 @@ function AppStack() {
           name="ConnectionDiagnostics"
           component={ConnectionDiagnosticsScreen}
           options={{ title: 'Diagnostico' }}
+        />
+        <Stack.Screen
+          name="Profile"
+          component={ProfileScreen}
+          options={{ title: 'Perfil' }}
         />
       </Stack.Navigator>
     </RobotConnectionProvider>
