@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import {
   View,
   Text,
@@ -7,15 +7,19 @@ import {
   KeyboardAvoidingView,
   ScrollView,
   Platform,
+  Alert,
 } from 'react-native';
 import { useAuth } from '../hooks/useAuth';
+import { useBiometric } from '../hooks/useBiometric';
 import AuthInput from '../components/AuthInput';
 import PrimaryButton from '../components/PrimaryButton';
+import BiometricButton from '../components/BiometricButton';
 import colors from '../config/colors';
 import { validateLoginForm } from '../utils/validators';
 
 export default function LoginScreen({ navigation, route }) {
   const { login } = useAuth();
+  const { available, enabled, label, enable, loginWithBiometric } = useBiometric();
 
   const registeredOk = route?.params?.registered === true;
 
@@ -25,16 +29,36 @@ export default function LoginScreen({ navigation, route }) {
   const [apiError, setApiError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const handleLogin = async () => {
+  const performLogin = useCallback(async (identifier, pwd) => {
+    await login(identifier.trim().toLowerCase(), pwd);
+  }, [login]);
+
+  const offerBiometricSetup = useCallback((identifier, pwd) => {
+    Alert.alert(
+      `Activar ${label}`,
+      `¿Querés usar ${label} para iniciar sesión más rápido la próxima vez?`,
+      [
+        { text: 'Ahora no', style: 'cancel' },
+        {
+          text: 'Activar',
+          onPress: () => enable(identifier.trim().toLowerCase(), pwd),
+        },
+      ]
+    );
+  }, [label, enable]);
+
+  const handleLogin = useCallback(async () => {
     setApiError('');
-    const newErrors = validateLoginForm({ email, password });
+    const newErrors = validateLoginForm({ identifier: email, password });
     setErrors(newErrors);
     if (Object.keys(newErrors).length > 0) return;
 
     setLoading(true);
     try {
-      await login(email.trim().toLowerCase(), password);
-      // La navegación la maneja AppNavigator automáticamente al detectar sesión activa
+      await performLogin(email, password);
+      if (available && !enabled) {
+        offerBiometricSetup(email, password);
+      }
     } catch (err) {
       const msg =
         err?.response?.data?.message ||
@@ -44,7 +68,25 @@ export default function LoginScreen({ navigation, route }) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [email, password, available, enabled, performLogin, offerBiometricSetup]);
+
+  const handleBiometricLogin = useCallback(async () => {
+    setApiError('');
+    setLoading(true);
+    try {
+      const credentials = await loginWithBiometric();
+      if (!credentials) return;
+      await performLogin(credentials.identifier, credentials.password);
+    } catch (err) {
+      const msg =
+        err?.response?.data?.message ||
+        err?.response?.data?.detail ||
+        'No se pudo iniciar sesión. Intentá con tu contraseña.';
+      setApiError(msg);
+    } finally {
+      setLoading(false);
+    }
+  }, [loginWithBiometric, performLogin]);
 
   return (
     <KeyboardAvoidingView
@@ -65,7 +107,7 @@ export default function LoginScreen({ navigation, route }) {
 
         <View style={styles.form}>
           <AuthInput
-            label="Email"
+            label="Email o usuario"
             value={email}
             onChangeText={setEmail}
             placeholder="tu@email.com"
@@ -90,6 +132,11 @@ export default function LoginScreen({ navigation, route }) {
           ) : null}
 
           <PrimaryButton title="Iniciar sesión" onPress={handleLogin} loading={loading} />
+
+          {/* Botón de biometría: visible solo si el hardware está disponible y el usuario lo activó */}
+          {available && enabled ? (
+            <BiometricButton label={label} onPress={handleBiometricLogin} />
+          ) : null}
 
           <View style={styles.footer}>
             <Text style={styles.footerText}>¿No tenés cuenta? </Text>
