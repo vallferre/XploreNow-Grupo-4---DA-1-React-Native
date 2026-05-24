@@ -1,9 +1,9 @@
 export const isValidEmail = (email) => /\S+@\S+\.\S+/.test(email);
 
-export const validateLoginForm = ({ email, password }) => {
+// La API acepta email o username en el campo identifier
+export const validateLoginForm = ({ identifier, password }) => {
   const errors = {};
-  if (!email.trim()) errors.email = 'El email es requerido';
-  else if (!isValidEmail(email)) errors.email = 'Email inválido';
+  if (!identifier?.trim()) errors.email = 'El email o usuario es requerido';
   if (!password) errors.password = 'La contraseña es requerida';
   return errors;
 };
