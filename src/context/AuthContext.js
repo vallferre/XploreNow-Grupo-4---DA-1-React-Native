@@ -1,6 +1,11 @@
 import React, { createContext, useState, useEffect, useCallback } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { login as apiLogin, register as apiRegister, setAuthToken } from '../services/authService';
+import {
+  login as apiLogin,
+  register as apiRegister,
+  setAuthToken,
+  setUnauthorizedHandler,
+} from '../services/authService';
 
 const SESSION_KEY = '@xplore_session';
 
@@ -53,6 +58,11 @@ export function AuthProvider({ children }) {
     setUser(null);
     setToken(null);
   }, []);
+
+  useEffect(() => {
+    setUnauthorizedHandler(logout);
+    return () => setUnauthorizedHandler(null);
+  }, [logout]);
 
   const isAuthenticated = Boolean(user && token);
 

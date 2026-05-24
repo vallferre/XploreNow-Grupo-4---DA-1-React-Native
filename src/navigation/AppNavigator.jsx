@@ -4,6 +4,9 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useAuth } from '../hooks/useAuth';
 import LoginScreen from '../screens/LoginScreen';
 import RegisterScreen from '../screens/RegisterScreen';
+import ConnectionScreen from '../screens/ConnectionScreen';
+import ConnectionDiagnosticsScreen from '../screens/ConnectionDiagnosticsScreen';
+import { RobotConnectionProvider } from '../context/RobotConnectionContext';
 import colors from '../config/colors';
 
 const Stack = createNativeStackNavigator();
@@ -22,18 +25,29 @@ function AuthStack() {
   );
 }
 
-// Placeholder para las pantallas protegidas (se completarán en otras features)
 function AppStack() {
   return (
-    <Stack.Navigator
-      screenOptions={{
-        headerStyle: { backgroundColor: colors.primary },
-        headerTintColor: colors.white,
-        headerTitleStyle: { fontWeight: '700' },
-      }}
-    >
-      {/* Las pantallas protegidas se agregarán aquí */}
-    </Stack.Navigator>
+    <RobotConnectionProvider>
+      <Stack.Navigator
+        initialRouteName="Connection"
+        screenOptions={{
+          headerStyle: { backgroundColor: colors.primary },
+          headerTintColor: colors.white,
+          headerTitleStyle: { fontWeight: '700' },
+        }}
+      >
+        <Stack.Screen
+          name="Connection"
+          component={ConnectionScreen}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="ConnectionDiagnostics"
+          component={ConnectionDiagnosticsScreen}
+          options={{ title: 'Diagnostico' }}
+        />
+      </Stack.Navigator>
+    </RobotConnectionProvider>
   );
 }
 
@@ -48,8 +62,6 @@ export default function AppNavigator() {
     );
   }
 
-  // React Navigation muestra el AuthStack o AppStack según si hay sesión activa.
-  // Esto cumple el requisito del TPO: pantallas de control accesibles SOLO con sesión activa.
   return isAuthenticated ? <AppStack /> : <AuthStack />;
 }
 

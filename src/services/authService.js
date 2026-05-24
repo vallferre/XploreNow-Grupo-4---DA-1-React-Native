@@ -1,7 +1,7 @@
 import axios from 'axios';
 
-// Cambiar por la IP correcta
-const BASE_URL = 'http://localhost:8000';
+// Cambiar por la IP que indique la catedra o por la IP LAN de la PC que corre la API.
+const BASE_URL = 'http://192.168.1.9:8000';
 
 const api = axios.create({
   baseURL: BASE_URL,
@@ -11,11 +11,27 @@ const api = axios.create({
   },
 });
 
+let unauthorizedHandler = null;
+
 // Interceptor para agregar el token a todas las requests autenticadas
 api.interceptors.request.use(
   (config) => config,
   (error) => Promise.reject(error)
 );
+
+api.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    if (error?.response?.status === 401 && unauthorizedHandler) {
+      await unauthorizedHandler();
+    }
+    return Promise.reject(error);
+  }
+);
+
+export const setUnauthorizedHandler = (handler) => {
+  unauthorizedHandler = handler;
+};
 
 export const setAuthToken = (token) => {
   if (token) {
