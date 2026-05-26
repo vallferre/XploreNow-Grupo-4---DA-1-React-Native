@@ -115,6 +115,7 @@ export default function ConnectionScreen({ navigation }) {
   const handleConnect = async () => {
     try {
       await connect();
+      navigation.navigate('MovementControl');
     } catch {
       // El contexto deja el mensaje de error listo para mostrar en pantalla.
     }
@@ -297,6 +298,16 @@ export default function ConnectionScreen({ navigation }) {
             <Text style={[styles.secondaryButtonText, styles.disconnectButtonText]}>
               Desconectar
             </Text>
+          </TouchableOpacity>
+        ) : null}
+
+        {isConnected ? (
+          <TouchableOpacity
+            style={styles.controlButton}
+            onPress={() => navigation.navigate('MovementControl')}
+            activeOpacity={0.85}
+          >
+            <Text style={styles.controlButtonText}>Controlar Robot  →</Text>
           </TouchableOpacity>
         ) : null}
 
@@ -592,6 +603,19 @@ const styles = StyleSheet.create({
   },
   disconnectButtonText: {
     color: colors.white,
+  },
+  controlButton: {
+    backgroundColor: colors.primary,
+    borderRadius: 12,
+    paddingVertical: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 10,
+  },
+  controlButtonText: {
+    color: colors.white,
+    fontSize: 16,
+    fontWeight: '800',
   },
   diagnosticsButton: {
     alignItems: 'center',
