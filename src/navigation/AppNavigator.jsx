@@ -6,6 +6,7 @@ import LoginScreen from '../screens/LoginScreen';
 import RegisterScreen from '../screens/RegisterScreen';
 import ConnectionScreen from '../screens/ConnectionScreen';
 import ConnectionDiagnosticsScreen from '../screens/ConnectionDiagnosticsScreen';
+import MovementControlScreen from '../screens/MovementControlScreen';
 import ProfileScreen from '../screens/ProfileScreen';
 import { RobotConnectionProvider } from '../context/RobotConnectionContext';
 import colors from '../config/colors';
@@ -46,6 +47,11 @@ function AppStack() {
           name="ConnectionDiagnostics"
           component={ConnectionDiagnosticsScreen}
           options={{ title: 'Diagnostico' }}
+        />
+        <Stack.Screen
+          name="MovementControl"
+          component={MovementControlScreen}
+          options={{ title: 'Control de Movimiento' }}
         />
         <Stack.Screen
           name="Profile"
