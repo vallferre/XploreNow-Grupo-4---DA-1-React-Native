@@ -37,3 +37,13 @@ export const sitDown = async () => {
   const response = await api.post('/sitdown');
   return response.data;
 };
+
+export const getAvailableActions = async () => {
+  const response = await api.get('/actions');
+  return response.data;
+};
+
+export const executeAction = async (actionName) => {
+  const response = await api.post(`/action/${actionName}`);
+  return response.data;
+};

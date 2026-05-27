@@ -12,6 +12,7 @@ import {
 import * as ScreenOrientation from 'expo-screen-orientation';
 import { useRobotConnection } from '../hooks/useRobotConnection';
 import colors from '../config/colors';
+import ActionsModal from '../components/ActionsModal';
 import { moveRobot, stopRobot, standUp, sitDown } from '../services/robotService';
 
 const MOVE_INTERVAL_MS = 150;
@@ -73,6 +74,7 @@ export default function MovementControlScreen() {
   const [leftDisplay, setLeftDisplay] = useState({ vx: 0, vy: 0 });
   const [rightDisplay, setRightDisplay] = useState({ vyaw: 0 });
   const [actionLoading, setActionLoading] = useState(null);
+  const [actionsModalVisible, setActionsModalVisible] = useState(false);
 
   const feedbackTimerRef = useRef(null);
   const dpadIntervalRef   = useRef(null);
@@ -318,6 +320,16 @@ export default function MovementControlScreen() {
           </TouchableOpacity>
         </View>
 
+        {/* Acciones predefinidas del robot */}
+        <TouchableOpacity
+          style={[styles.actionsBtn, !isConnected && styles.disabled]}
+          onPress={() => setActionsModalVisible(true)}
+          disabled={!isConnected}
+          activeOpacity={0.8}
+        >
+          <Text style={styles.actionsBtnText}>★  Acciones</Text>
+        </TouchableOpacity>
+
         {!isConnected && (
           <Text style={styles.disconnectedHint}>Conectate para controlar el robot</Text>
         )}
@@ -332,6 +344,13 @@ export default function MovementControlScreen() {
         tint="#F5A623"
         disabled={!isConnected}
       />
+
+      <ActionsModal
+        visible={actionsModalVisible}
+        onClose={() => setActionsModalVisible(false)}
+        isConnected={isConnected}
+        onFeedback={showFeedback}
+      />
     </View>
   );
 }
@@ -341,17 +360,19 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: 'row',
     backgroundColor: '#07111F',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     paddingHorizontal: 8,
-    paddingVertical: 6,
+    paddingTop: 4,
+    paddingBottom: 10,
   },
 
   // Joystick column
   joyCol: {
     flex: 1,
+    alignSelf: 'stretch',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 8,
+    gap: 6,
   },
   joyTitle: {
     color: '#A8B3C7',
@@ -404,11 +425,15 @@ const styles = StyleSheet.create({
   },
 
   // Center
-  centerScroll: { flex: 0.9 },
+  centerScroll: {
+    flex: 0.9,
+    alignSelf: 'stretch',
+  },
   center: {
     alignItems: 'center',
-    paddingVertical: 4,
-    gap: 8,
+    paddingTop: 0,
+    paddingBottom: 6,
+    gap: 5,
   },
 
   statusRow: {
@@ -458,7 +483,7 @@ const styles = StyleSheet.create({
   stopBtn: {
     backgroundColor: '#C62828',
     borderRadius: 10,
-    paddingVertical: 9,
+    paddingVertical: 7,
     width: DPAD_BTN * 3 + DPAD_GAP * 2,
     alignItems: 'center',
   },
@@ -472,15 +497,26 @@ const styles = StyleSheet.create({
   },
   postureBtn: {
     flex: 1,
-    paddingVertical: 9,
+    paddingVertical: 7,
     borderRadius: 10,
     alignItems: 'center',
     justifyContent: 'center',
-    minHeight: 36,
+    minHeight: 32,
   },
   standupBtn: { backgroundColor: '#1558B0' },
   sitdownBtn: { backgroundColor: '#7C3AED' },
   postureTxt: { color: colors.white, fontSize: 12, fontWeight: '800' },
+
+  actionsBtn: {
+    backgroundColor: '#0D4A3A',
+    borderRadius: 10,
+    paddingVertical: 7,
+    width: DPAD_BTN * 3 + DPAD_GAP * 2,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#50E38A44',
+  },
+  actionsBtnText: { color: '#50E38A', fontSize: 13, fontWeight: '800' },
 
   disconnectedHint: {
     color: '#FF6B6B',
