@@ -3,7 +3,7 @@ import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-nati
 import colors from '../config/colors';
 import { useAuth } from '../hooks/useAuth';
 
-export default function ProfileScreen() {
+export default function ProfileScreen({ navigation }) {
   const { user, logout } = useAuth();
   const identifier = user?.identifier || user?.email || user?.username || 'Usuario autenticado';
 
@@ -30,6 +30,14 @@ export default function ProfileScreen() {
           <Text style={styles.value}>Activa</Text>
         </View>
       </View>
+
+      <TouchableOpacity
+        style={styles.historyButton}
+        onPress={() => navigation.navigate('CommandHistory')}
+        activeOpacity={0.8}
+      >
+        <Text style={styles.historyText}>Ver historial de comandos</Text>
+      </TouchableOpacity>
 
       <TouchableOpacity style={styles.logoutButton} onPress={logout} activeOpacity={0.8}>
         <Text style={styles.logoutText}>Salir de la cuenta</Text>
@@ -115,6 +123,19 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  historyButton: {
+    backgroundColor: colors.primary,
+    borderRadius: 12,
+    paddingVertical: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 12,
+  },
+  historyText: {
+    color: colors.white,
+    fontSize: 16,
+    fontWeight: '800',
   },
   logoutText: {
     color: colors.white,

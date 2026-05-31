@@ -196,6 +196,18 @@ export function RobotConnectionProvider({ children }) {
     }
   }, [applyStatus, autoReconnect, connect]);
 
+  useEffect(() => {
+    if (!settingsLoaded) return;
+
+    refreshStatus({ allowReconnect: true, silent: true }).catch(() => {});
+
+    const intervalId = setInterval(() => {
+      refreshStatus({ allowReconnect: true, silent: true }).catch(() => {});
+    }, 10000);
+
+    return () => clearInterval(intervalId);
+  }, [refreshStatus, settingsLoaded]);
+
   const value = useMemo(() => ({
     robotType,
     setRobotType,

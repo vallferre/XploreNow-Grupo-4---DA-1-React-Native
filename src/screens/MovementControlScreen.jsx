@@ -11,9 +11,9 @@ import {
 } from 'react-native';
 import * as ScreenOrientation from 'expo-screen-orientation';
 import { useRobotConnection } from '../hooks/useRobotConnection';
+import { useCommandHistory } from '../hooks/useCommandHistory';
 import colors from '../config/colors';
 import ActionsModal from '../components/ActionsModal';
-import { moveRobot, stopRobot, standUp, sitDown } from '../services/robotService';
 
 const MOVE_INTERVAL_MS = 150;
 const MAX_SPEED = 0.8;
@@ -70,6 +70,7 @@ function Joystick({ thumbAnim, panHandlers, label, valLine, tint, disabled }) {
 
 export default function MovementControlScreen() {
   const { isConnected, connectionState } = useRobotConnection();
+  const { sendMove, sendStop, sendStandUp, sendSitDown } = useCommandHistory();
   const [feedback, setFeedback] = useState(null);
   const [leftDisplay, setLeftDisplay] = useState({ vx: 0, vy: 0 });
   const [rightDisplay, setRightDisplay] = useState({ vyaw: 0 });
@@ -130,7 +131,7 @@ export default function MovementControlScreen() {
       sharedIntervalRef.current = setInterval(() => {
         const { vx, vy } = leftVals.current;
         const { vyaw }   = rightVals.current;
-        moveRobot(vx, vy, vyaw).catch(() => {});
+        sendMove(vx, vy, vyaw).catch(() => {});
       }, MOVE_INTERVAL_MS);
     }
   };
@@ -145,7 +146,7 @@ export default function MovementControlScreen() {
     if (activeJoys.current === 0) {
       clearInterval(sharedIntervalRef.current);
       sharedIntervalRef.current = null;
-      stopRobot().catch(() => {});
+      sendStop().catch(() => {});
     }
   };
 
@@ -195,40 +196,40 @@ export default function MovementControlScreen() {
   // D-Pad: hold to move, release to stop
   const handleDpadIn = useCallback((action) => {
     if (!isConnected) return;
-    moveRobot(action.vx, action.vy, action.vyaw).catch(() => {});
+    sendMove(action.vx, action.vy, action.vyaw).catch(() => {});
     dpadIntervalRef.current = setInterval(() => {
-      moveRobot(action.vx, action.vy, action.vyaw).catch(() => {});
+      sendMove(action.vx, action.vy, action.vyaw).catch(() => {});
     }, MOVE_INTERVAL_MS);
-  }, [isConnected]);
+  }, [isConnected, sendMove]);
 
   const handleDpadOut = useCallback(() => {
     clearInterval(dpadIntervalRef.current);
     dpadIntervalRef.current = null;
-    if (isConnected) stopRobot().catch(() => {});
-  }, [isConnected]);
+    if (isConnected) sendStop().catch(() => {});
+  }, [isConnected, sendStop]);
 
   // Stop
   const handleStop = useCallback(async () => {
     try {
-      await stopRobot();
+      await sendStop();
       showFeedback('success', 'Robot detenido');
     } catch {
       showFeedback('error', 'Error al detener');
     }
-  }, [showFeedback]);
+  }, [sendStop, showFeedback]);
 
   // Posture
   const handlePosture = useCallback(async (type) => {
     setActionLoading(type);
     try {
-      if (type === 'standup') { await standUp();  showFeedback('success', 'Robot parado'); }
-      else                    { await sitDown();  showFeedback('success', 'Robot sentado'); }
+      if (type === 'standup') { await sendStandUp(); showFeedback('success', 'Robot parado'); }
+      else                    { await sendSitDown(); showFeedback('success', 'Robot sentado'); }
     } catch {
       showFeedback('error', `Error al ${type === 'standup' ? 'pararse' : 'sentarse'}`);
     } finally {
       setActionLoading(null);
     }
-  }, [showFeedback]);
+  }, [sendSitDown, sendStandUp, showFeedback]);
 
   const connColor = isConnected ? '#50E38A' : '#FF6B6B';
   const connLabel = isConnected ? 'Conectado' : connectionState === 'error' ? 'Error' : 'Desconectado';
