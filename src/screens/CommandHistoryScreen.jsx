@@ -100,7 +100,7 @@ export default function CommandHistoryScreen() {
 const styles = StyleSheet.create({
   container: {
     flexGrow: 1,
-    backgroundColor: colors.background,
+    backgroundColor: '#07111F',
     padding: 20,
     paddingBottom: 32,
   },
@@ -110,21 +110,23 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 28,
     fontWeight: '800',
-    color: colors.text,
+    color: colors.white,
   },
   subtitle: {
     fontSize: 14,
-    color: colors.textSecondary,
+    color: '#A8B3C7',
     marginTop: 4,
   },
   errorBox: {
-    backgroundColor: colors.errorLight,
+    backgroundColor: '#37161B',
     borderRadius: 10,
     padding: 12,
     marginBottom: 14,
+    borderWidth: 1,
+    borderColor: '#5B252D',
   },
   errorText: {
-    color: colors.error,
+    color: '#FF6B6B',
     fontSize: 13,
     fontWeight: '600',
     textAlign: 'center',
@@ -135,36 +137,36 @@ const styles = StyleSheet.create({
     paddingVertical: 32,
   },
   loadingText: {
-    color: colors.textSecondary,
+    color: '#A8B3C7',
     marginTop: 12,
     fontSize: 14,
     fontWeight: '600',
   },
   emptyState: {
-    backgroundColor: colors.surface,
+    backgroundColor: '#101827',
     borderRadius: 14,
     padding: 18,
     borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: '#233044',
   },
   emptyTitle: {
-    color: colors.text,
+    color: colors.white,
     fontSize: 16,
     fontWeight: '800',
   },
   emptySubtitle: {
-    color: colors.textSecondary,
+    color: '#A8B3C7',
     fontSize: 14,
     marginTop: 6,
     lineHeight: 20,
   },
   card: {
-    backgroundColor: colors.surface,
+    backgroundColor: '#101827',
     borderRadius: 14,
     padding: 16,
     marginTop: 12,
     borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: '#233044',
   },
   cardHeader: {
     flexDirection: 'row',
@@ -174,7 +176,7 @@ const styles = StyleSheet.create({
   },
   commandName: {
     flex: 1,
-    color: colors.text,
+    color: colors.white,
     fontSize: 16,
     fontWeight: '800',
     textTransform: 'capitalize',
@@ -185,23 +187,23 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
   },
   successBadge: {
-    backgroundColor: colors.successLight,
+    backgroundColor: '#102F20',
   },
   errorBadge: {
-    backgroundColor: colors.errorLight,
+    backgroundColor: '#37161B',
   },
   statusText: {
     fontSize: 12,
     fontWeight: '800',
   },
   successText: {
-    color: colors.success,
+    color: '#50E38A',
   },
   errorStatusText: {
-    color: colors.error,
+    color: '#FF6B6B',
   },
   timestamp: {
-    color: colors.textSecondary,
+    color: '#A8B3C7',
     fontSize: 13,
     marginTop: 10,
   },
