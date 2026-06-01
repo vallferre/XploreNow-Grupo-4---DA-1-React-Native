@@ -9,7 +9,8 @@ import {
   View,
 } from 'react-native';
 import colors from '../config/colors';
-import { executeAction, getAvailableActions } from '../services/robotService';
+import { getAvailableActions } from '../services/robotService';
+import { useCommandHistory } from '../hooks/useCommandHistory';
 
 const MODAL_ORIENTATIONS = [
   'portrait',
@@ -147,6 +148,7 @@ function ActionCard({ name, executing, disabled, onPress }) {
 }
 
 export default function ActionsModal({ visible, onClose, isConnected, onFeedback }) {
+  const { sendAction } = useCommandHistory();
   const [actions, setActions] = useState([]);
   const [robotType, setRobotType] = useState('');
   const [loading, setLoading] = useState(false);
@@ -184,7 +186,7 @@ export default function ActionsModal({ visible, onClose, isConnected, onFeedback
   const handleExecute = async (name) => {
     setExecuting(name);
     try {
-      await executeAction(name);
+      await sendAction(name);
       onFeedback?.('success', `${formatActionLabel(name)} ejecutada`);
       onClose();
     } catch {

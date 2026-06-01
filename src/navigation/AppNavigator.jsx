@@ -8,7 +8,10 @@ import ConnectionScreen from '../screens/ConnectionScreen';
 import ConnectionDiagnosticsScreen from '../screens/ConnectionDiagnosticsScreen';
 import MovementControlScreen from '../screens/MovementControlScreen';
 import ProfileScreen from '../screens/ProfileScreen';
+import CommandHistoryScreen from '../screens/CommandHistoryScreen';
 import { RobotConnectionProvider } from '../context/RobotConnectionContext';
+import { CommandHistoryProvider } from '../context/CommandHistoryContext';
+import ConnectionStatusBadge from '../components/ConnectionStatusBadge';
 import colors from '../config/colors';
 
 const Stack = createNativeStackNavigator();
@@ -30,35 +33,43 @@ function AuthStack() {
 function AppStack() {
   return (
     <RobotConnectionProvider>
-      <Stack.Navigator
-        initialRouteName="Connection"
-        screenOptions={{
-          headerStyle: { backgroundColor: colors.primary },
-          headerTintColor: colors.white,
-          headerTitleStyle: { fontWeight: '700' },
-        }}
-      >
-        <Stack.Screen
-          name="Connection"
-          component={ConnectionScreen}
-          options={{ headerShown: false }}
-        />
-        <Stack.Screen
-          name="ConnectionDiagnostics"
-          component={ConnectionDiagnosticsScreen}
-          options={{ title: 'Diagnostico' }}
-        />
-        <Stack.Screen
-          name="MovementControl"
-          component={MovementControlScreen}
-          options={{ title: 'Control de Movimiento' }}
-        />
-        <Stack.Screen
-          name="Profile"
-          component={ProfileScreen}
-          options={{ title: 'Perfil' }}
-        />
-      </Stack.Navigator>
+      <CommandHistoryProvider>
+        <Stack.Navigator
+          initialRouteName="Connection"
+          screenOptions={{
+            headerStyle: { backgroundColor: colors.primary },
+            headerTintColor: colors.white,
+            headerTitleStyle: { fontWeight: '700' },
+            headerRight: () => <ConnectionStatusBadge compact />,
+          }}
+        >
+          <Stack.Screen
+            name="Connection"
+            component={ConnectionScreen}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="ConnectionDiagnostics"
+            component={ConnectionDiagnosticsScreen}
+            options={{ title: 'Diagnostico' }}
+          />
+          <Stack.Screen
+            name="MovementControl"
+            component={MovementControlScreen}
+            options={{ title: 'Control de Movimiento' }}
+          />
+          <Stack.Screen
+            name="CommandHistory"
+            component={CommandHistoryScreen}
+            options={{ title: 'Historial de Comandos' }}
+          />
+          <Stack.Screen
+            name="Profile"
+            component={ProfileScreen}
+            options={{ title: 'Perfil' }}
+          />
+        </Stack.Navigator>
+      </CommandHistoryProvider>
     </RobotConnectionProvider>
   );
 }

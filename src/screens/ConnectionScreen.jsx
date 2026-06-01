@@ -12,6 +12,7 @@ import {
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import PrimaryButton from '../components/PrimaryButton';
+import ConnectionStatusBadge from '../components/ConnectionStatusBadge';
 import colors from '../config/colors';
 import { useAuth } from '../hooks/useAuth';
 import { useRobotConnection } from '../hooks/useRobotConnection';
@@ -100,12 +101,6 @@ export default function ConnectionScreen({ navigation }) {
   useFocusEffect(
     useCallback(() => {
       refreshStatus({ allowReconnect: true }).catch(() => {});
-
-      const intervalId = setInterval(() => {
-        refreshStatus({ allowReconnect: true, silent: true }).catch(() => {});
-      }, 10000);
-
-      return () => clearInterval(intervalId);
     }, [refreshStatus])
   );
 
@@ -132,6 +127,11 @@ export default function ConnectionScreen({ navigation }) {
   const handleProfilePress = () => {
     setMenuOpen(false);
     navigation.navigate('Profile');
+  };
+
+  const handleHistoryPress = () => {
+    setMenuOpen(false);
+    navigation.navigate('CommandHistory');
   };
 
   const handleLogoutPress = async () => {
@@ -161,6 +161,9 @@ export default function ConnectionScreen({ navigation }) {
           ]}
         />
         <Text style={styles.customHeaderTitle}>Conexion</Text>
+        <View style={styles.headerBadge}>
+          <ConnectionStatusBadge compact />
+        </View>
         <TouchableOpacity
           style={styles.headerMenuButton}
           onPress={() => setMenuOpen((open) => !open)}
@@ -176,6 +179,13 @@ export default function ConnectionScreen({ navigation }) {
               activeOpacity={0.75}
             >
               <Text style={styles.headerMenuText}>Perfil</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.headerMenuItem}
+              onPress={handleHistoryPress}
+              activeOpacity={0.75}
+            >
+              <Text style={styles.headerMenuText}>Historial</Text>
             </TouchableOpacity>
             <TouchableOpacity
               style={[styles.headerMenuItem, styles.headerMenuDangerItem]}
@@ -359,6 +369,11 @@ const styles = StyleSheet.create({
     color: colors.white,
     fontSize: 30,
     fontWeight: '800',
+  },
+  headerBadge: {
+    position: 'absolute',
+    left: 16,
+    bottom: 26,
   },
   headerMenuButton: {
     position: 'absolute',
