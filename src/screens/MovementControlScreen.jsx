@@ -1,6 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
-  ActivityIndicator,
   Animated,
   PanResponder,
   StyleSheet,
@@ -70,11 +69,10 @@ function Joystick({ thumbAnim, panHandlers, label, valLine, tint, disabled }) {
 
 export default function MovementControlScreen() {
   const { isConnected, connectionState } = useRobotConnection();
-  const { sendMove, sendStop, sendStandUp, sendSitDown } = useCommandHistory();
+  const { sendMove, sendStop } = useCommandHistory();
   const [feedback, setFeedback] = useState(null);
   const [leftDisplay, setLeftDisplay] = useState({ vx: 0, vy: 0 });
   const [rightDisplay, setRightDisplay] = useState({ vyaw: 0 });
-  const [actionLoading, setActionLoading] = useState(null);
   const [actionsModalVisible, setActionsModalVisible] = useState(false);
 
   const feedbackTimerRef = useRef(null);
@@ -218,19 +216,6 @@ export default function MovementControlScreen() {
     }
   }, [sendStop, showFeedback]);
 
-  // Posture
-  const handlePosture = useCallback(async (type) => {
-    setActionLoading(type);
-    try {
-      if (type === 'standup') { await sendStandUp(); showFeedback('success', 'Robot parado'); }
-      else                    { await sendSitDown(); showFeedback('success', 'Robot sentado'); }
-    } catch {
-      showFeedback('error', `Error al ${type === 'standup' ? 'pararse' : 'sentarse'}`);
-    } finally {
-      setActionLoading(null);
-    }
-  }, [sendSitDown, sendStandUp, showFeedback]);
-
   const connColor = isConnected ? '#50E38A' : '#FF6B6B';
   const connLabel = isConnected ? 'Conectado' : connectionState === 'error' ? 'Error' : 'Desconectado';
   const [fwd, bck, lft, rgt] = DPAD;
@@ -296,30 +281,6 @@ export default function MovementControlScreen() {
         >
           <Text style={styles.stopText}>■  Detener</Text>
         </TouchableOpacity>
-
-        {/* Posture */}
-        <View style={styles.postureRow}>
-          <TouchableOpacity
-            style={[styles.postureBtn, styles.standupBtn, (!isConnected || actionLoading !== null) && styles.disabled]}
-            onPress={() => handlePosture('standup')}
-            disabled={!isConnected || actionLoading !== null}
-            activeOpacity={0.8}
-          >
-            {actionLoading === 'standup'
-              ? <ActivityIndicator color={colors.white} />
-              : <Text style={styles.postureTxt}>↑ Pararse</Text>}
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[styles.postureBtn, styles.sitdownBtn, (!isConnected || actionLoading !== null) && styles.disabled]}
-            onPress={() => handlePosture('sitdown')}
-            disabled={!isConnected || actionLoading !== null}
-            activeOpacity={0.8}
-          >
-            {actionLoading === 'sitdown'
-              ? <ActivityIndicator color={colors.white} />
-              : <Text style={styles.postureTxt}>↓ Sentarse</Text>}
-          </TouchableOpacity>
-        </View>
 
         {/* Acciones predefinidas del robot */}
         <TouchableOpacity
@@ -489,24 +450,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   stopText: { color: colors.white, fontSize: 13, fontWeight: '800' },
-
-  // Posture
-  postureRow: {
-    flexDirection: 'row',
-    gap: 6,
-    width: DPAD_BTN * 3 + DPAD_GAP * 2,
-  },
-  postureBtn: {
-    flex: 1,
-    paddingVertical: 7,
-    borderRadius: 10,
-    alignItems: 'center',
-    justifyContent: 'center',
-    minHeight: 32,
-  },
-  standupBtn: { backgroundColor: '#1558B0' },
-  sitdownBtn: { backgroundColor: '#7C3AED' },
-  postureTxt: { color: colors.white, fontSize: 12, fontWeight: '800' },
 
   actionsBtn: {
     backgroundColor: '#0D4A3A',
