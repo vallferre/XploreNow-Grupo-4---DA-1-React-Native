@@ -12,7 +12,6 @@ import {
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import PrimaryButton from '../components/PrimaryButton';
-import ConnectionStatusBadge from '../components/ConnectionStatusBadge';
 import colors from '../config/colors';
 import { useAuth } from '../hooks/useAuth';
 import { useRobotConnection } from '../hooks/useRobotConnection';
@@ -142,34 +141,37 @@ export default function ConnectionScreen({ navigation }) {
   return (
     <View style={styles.flex}>
       <View style={styles.customHeader}>
-        <Animated.View
-          style={[
-            styles.customHeaderGlow,
-            {
-              opacity: headerGlowOpacity,
-              transform: [{ scaleX: headerProgress }],
-            },
-          ]}
-        />
-        <Animated.View
-          style={[
-            styles.customHeaderFill,
-            {
-              opacity: headerFillOpacity,
-              transform: [{ scaleX: headerProgress }],
-            },
-          ]}
-        />
-        <Text style={styles.customHeaderTitle}>Conexion</Text>
-        <View style={styles.headerBadge}>
-          <ConnectionStatusBadge compact />
+        <View style={styles.customHeaderBackground} pointerEvents="none">
+          <Animated.View
+            style={[
+              styles.customHeaderGlow,
+              {
+                opacity: headerGlowOpacity,
+                transform: [{ scaleX: headerProgress }],
+              },
+            ]}
+          />
+          <Animated.View
+            style={[
+              styles.customHeaderFill,
+              {
+                opacity: headerFillOpacity,
+                transform: [{ scaleX: headerProgress }],
+              },
+            ]}
+          />
         </View>
+        <Text style={styles.customHeaderTitle}>Conexion</Text>
         <TouchableOpacity
           style={styles.headerMenuButton}
           onPress={() => setMenuOpen((open) => !open)}
           activeOpacity={0.8}
         >
-          <Text style={styles.headerMenuIcon}>...</Text>
+          <View style={styles.headerMenuDots}>
+            <View style={styles.headerMenuDot} />
+            <View style={styles.headerMenuDot} />
+            <View style={styles.headerMenuDot} />
+          </View>
         </TouchableOpacity>
         {menuOpen ? (
           <View style={styles.headerMenu}>
@@ -349,10 +351,14 @@ const styles = StyleSheet.create({
     zIndex: 20,
     elevation: 20,
   },
+  customHeaderBackground: {
+    ...StyleSheet.absoluteFillObject,
+    overflow: 'hidden',
+  },
   customHeaderGlow: {
     position: 'absolute',
-    top: -18,
-    bottom: -18,
+    top: 0,
+    bottom: 0,
     left: 0,
     right: 0,
     backgroundColor: '#6CFF9F',
@@ -370,15 +376,10 @@ const styles = StyleSheet.create({
     fontSize: 30,
     fontWeight: '800',
   },
-  headerBadge: {
-    position: 'absolute',
-    left: 16,
-    bottom: 26,
-  },
   headerMenuButton: {
     position: 'absolute',
     right: 18,
-    bottom: 26,
+    bottom: 18,
     width: 40,
     height: 40,
     borderRadius: 20,
@@ -388,12 +389,17 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.25)',
   },
-  headerMenuIcon: {
-    color: colors.white,
-    fontSize: 22,
-    fontWeight: '900',
-    lineHeight: 18,
-    marginTop: -8,
+  headerMenuDots: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  headerMenuDot: {
+    width: 4,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: colors.white,
+    marginHorizontal: 2,
   },
   headerMenu: {
     position: 'absolute',

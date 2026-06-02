@@ -16,6 +16,10 @@ import colors from '../config/colors';
 
 const Stack = createNativeStackNavigator();
 
+function AppStackHeaderRight() {
+  return <ConnectionStatusBadge compact />;
+}
+
 function AuthStack() {
   return (
     <Stack.Navigator
@@ -40,13 +44,16 @@ function AppStack() {
             headerStyle: { backgroundColor: colors.primary },
             headerTintColor: colors.white,
             headerTitleStyle: { fontWeight: '700' },
-            headerRight: () => <ConnectionStatusBadge compact />,
+            headerRight: () => <AppStackHeaderRight />,
           }}
         >
           <Stack.Screen
             name="Connection"
             component={ConnectionScreen}
-            options={{ headerShown: false }}
+            options={{
+              headerShown: false,
+              headerRight: () => null,
+            }}
           />
           <Stack.Screen
             name="ConnectionDiagnostics"

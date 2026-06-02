@@ -12,6 +12,9 @@ import colors from '../config/colors';
 import { getAvailableActions } from '../services/robotService';
 import { useCommandHistory } from '../hooks/useCommandHistory';
 
+/** Siempre visibles en el modal; usan /standup y /sitdown, no /action/{name}. */
+const POSTURE_ACTIONS = ['standup', 'sitdown'];
+
 const MODAL_ORIENTATIONS = [
   'portrait',
   'portrait-upside-down',
@@ -21,6 +24,8 @@ const MODAL_ORIENTATIONS = [
 ];
 
 const ACTION_LABELS = {
+  standup: 'Pararse',
+  sitdown: 'Sentarse',
   hello: 'Saludar',
   stretch: 'Estirar',
   dance1: 'Baile 1',
@@ -55,6 +60,8 @@ const ACTION_LABELS = {
 };
 
 const ACTION_ACCENTS = {
+  standup:        '#1558B0',
+  sitdown:        '#7C3AED',
   hello:          '#1A73E8',
   stretch:        '#50E38A',
   dance1:         '#7C3AED',
@@ -148,7 +155,7 @@ function ActionCard({ name, executing, disabled, onPress }) {
 }
 
 export default function ActionsModal({ visible, onClose, isConnected, onFeedback }) {
-  const { sendAction } = useCommandHistory();
+  const { sendAction, sendStandUp, sendSitDown } = useCommandHistory();
   const [actions, setActions] = useState([]);
   const [robotType, setRobotType] = useState('');
   const [loading, setLoading] = useState(false);
@@ -186,16 +193,31 @@ export default function ActionsModal({ visible, onClose, isConnected, onFeedback
   const handleExecute = async (name) => {
     setExecuting(name);
     try {
-      await sendAction(name);
-      onFeedback?.('success', `${formatActionLabel(name)} ejecutada`);
+      if (name === 'standup') {
+        await sendStandUp();
+        onFeedback?.('success', 'Robot parado');
+      } else if (name === 'sitdown') {
+        await sendSitDown();
+        onFeedback?.('success', 'Robot sentado');
+      } else {
+        await sendAction(name);
+        onFeedback?.('success', `${formatActionLabel(name)} ejecutada`);
+      }
       onClose();
     } catch {
-      onFeedback?.('error', `Error al ejecutar ${formatActionLabel(name)}`);
+      if (name === 'standup') {
+        onFeedback?.('error', 'Error al pararse');
+      } else if (name === 'sitdown') {
+        onFeedback?.('error', 'Error al sentarse');
+      } else {
+        onFeedback?.('error', `Error al ejecutar ${formatActionLabel(name)}`);
+      }
     } finally {
       setExecuting(null);
     }
   };
 
+  const totalCount = POSTURE_ACTIONS.length + actions.length;
   const robotLabel = robotType === 'go2' ? 'Unitree Go2' : robotType === 'g1' ? 'Unitree G1' : 'Robot';
 
   return (
@@ -217,8 +239,8 @@ export default function ActionsModal({ visible, onClose, isConnected, onFeedback
               <Text style={styles.title}>Acciones</Text>
               <Text style={styles.subtitle}>
                 {loading
-                  ? 'Cargando...'
-                  : `${actions.length} disponible${actions.length !== 1 ? 's' : ''} · ${robotLabel}`}
+                  ? 'Cargando acciones del robot...'
+                  : `${totalCount} disponible${totalCount !== 1 ? 's' : ''} · ${robotLabel}`}
               </Text>
             </View>
             <TouchableOpacity style={styles.closeBtn} onPress={onClose} hitSlop={8}>
@@ -226,47 +248,58 @@ export default function ActionsModal({ visible, onClose, isConnected, onFeedback
             </TouchableOpacity>
           </View>
 
-          {loading ? (
-            <View style={styles.centered}>
-              <ActivityIndicator color="#50E38A" size="large" />
-              <Text style={styles.hint}>Obteniendo acciones del robot...</Text>
-            </View>
-          ) : loadError ? (
-            <View style={styles.centered}>
+          {loadError ? (
+            <View style={styles.loadErrorBar}>
               <Text style={styles.errorText}>{loadError}</Text>
               <TouchableOpacity style={styles.retryBtn} onPress={loadActions}>
                 <Text style={styles.retryText}>Reintentar</Text>
               </TouchableOpacity>
             </View>
-          ) : actions.length === 0 ? (
-            <View style={styles.centered}>
-              <Text style={styles.hint}>No hay acciones disponibles.</Text>
-            </View>
-          ) : (
-            <ScrollView
-              style={styles.list}
-              contentContainerStyle={styles.listContent}
-              showsVerticalScrollIndicator={false}
-            >
-              <View style={styles.grid}>
-                {actions.map((item) => (
-                  <ActionCard
-                    key={item}
-                    name={item}
-                    executing={executing}
-                    disabled={executing !== null}
-                    onPress={handleExecute}
-                  />
-                ))}
-              </View>
-            </ScrollView>
-          )}
+          ) : null}
 
-          {!loading && actions.length > 0 && (
-            <View style={styles.footer}>
-              <Text style={styles.footerText}>Tocá una acción para ejecutarla en el robot</Text>
+          <ScrollView
+            style={styles.list}
+            contentContainerStyle={styles.listContent}
+            showsVerticalScrollIndicator={false}
+          >
+            {loading ? (
+              <View style={styles.inlineLoader}>
+                <ActivityIndicator color="#50E38A" size="small" />
+                <Text style={styles.hint}>Cargando más acciones...</Text>
+              </View>
+            ) : null}
+
+            <View style={styles.grid}>
+              {POSTURE_ACTIONS.map((item) => (
+                <ActionCard
+                  key={item}
+                  name={item}
+                  executing={executing}
+                  disabled={executing !== null}
+                  onPress={handleExecute}
+                />
+              ))}
+              {actions.map((item) => (
+                <ActionCard
+                  key={item}
+                  name={item}
+                  executing={executing}
+                  disabled={executing !== null}
+                  onPress={handleExecute}
+                />
+              ))}
             </View>
-          )}
+
+            {!loading && !loadError && actions.length === 0 ? (
+              <Text style={styles.emptyExtraHint}>
+                No hay más acciones predefinidas para este robot.
+              </Text>
+            ) : null}
+          </ScrollView>
+
+          <View style={styles.footer}>
+            <Text style={styles.footerText}>Tocá una acción para ejecutarla en el robot</Text>
+          </View>
         </View>
       </View>
     </Modal>
@@ -351,6 +384,31 @@ const styles = StyleSheet.create({
   },
   listContent: {
     padding: 12,
+    gap: 8,
+  },
+  loadErrorBar: {
+    alignItems: 'center',
+    paddingHorizontal: 18,
+    paddingVertical: 10,
+    gap: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: '#1E2A3D',
+    backgroundColor: '#37161B22',
+  },
+  inlineLoader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    paddingBottom: 4,
+  },
+  emptyExtraHint: {
+    color: '#6B7A94',
+    fontSize: 12,
+    fontWeight: '600',
+    textAlign: 'center',
+    marginTop: 4,
+    paddingHorizontal: 8,
   },
   grid: {
     flexDirection: 'row',

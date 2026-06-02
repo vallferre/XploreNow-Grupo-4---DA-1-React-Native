@@ -95,7 +95,7 @@ export default function LoginScreen({ navigation, route }) {
     >
       <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
         <View style={styles.header}>
-          <Text style={styles.title}>XploreNow</Text>
+          <Text style={styles.title}>MegaBot V2</Text>
           <Text style={styles.subtitle}>Iniciá sesión para continuar</Text>
         </View>
 
