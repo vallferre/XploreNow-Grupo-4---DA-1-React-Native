@@ -1,39 +1,53 @@
-import React, { createContext, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, {
+  createContext,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import { executeAction, moveRobot, sitDown, standUp, stopRobot } from '../services/robotService';
-import { getCommandHistory } from '../services/historyService';
+import {
+  loadLocalHistory,
+  saveLocalCommand,
+  shouldLogMove,
+} from '../services/localHistoryStorage';
+import { useAuth } from '../hooks/useAuth';
 
 export const CommandHistoryContext = createContext(null);
 
-const getHistoryErrorMessage = (error) => {
-  if (error?.response?.status === 404) return 'La API no expone historial de comandos.';
-  if (error?.response?.status === 401) return 'Tu sesion vencio. Volve a iniciar sesion.';
-  if (error?.message === 'Network Error') return 'No se pudo consultar el historial.';
-  return error?.response?.data?.detail || 'No se pudo cargar el historial de comandos.';
-};
-
 export function CommandHistoryProvider({ children }) {
+  const { user } = useAuth();
+  const userId = user?.identifier;
+
   const [history, setHistory] = useState([]);
   const [loadingHistory, setLoadingHistory] = useState(false);
   const [historyError, setHistoryError] = useState('');
   const refreshTimeoutRef = useRef(null);
+  const lastMoveLogAtRef = useRef(0);
 
   const refreshHistory = useCallback(async ({ silent = false } = {}) => {
     if (!silent) setLoadingHistory(true);
     setHistoryError('');
 
     try {
-      const nextHistory = await getCommandHistory();
+      if (!userId) {
+        setHistory([]);
+        return [];
+      }
+
+      const nextHistory = await loadLocalHistory(userId);
       setHistory(nextHistory);
       return nextHistory;
     } catch (error) {
-      setHistoryError(getHistoryErrorMessage(error));
+      setHistoryError(error?.message || 'No se pudo cargar el historial local.');
       throw error;
     } finally {
       if (!silent) setLoadingHistory(false);
     }
-  }, []);
+  }, [userId]);
 
-  const scheduleHistoryRefresh = useCallback((delayMs = 350) => {
+  const scheduleHistoryRefresh = useCallback((delayMs = 150) => {
     clearTimeout(refreshTimeoutRef.current);
     refreshTimeoutRef.current = setTimeout(() => {
       refreshHistory({ silent: true }).catch(() => {});
@@ -42,24 +56,73 @@ export function CommandHistoryProvider({ children }) {
 
   useEffect(() => () => clearTimeout(refreshTimeoutRef.current), []);
 
+  useEffect(() => {
+    refreshHistory({ silent: true }).catch(() => {});
+  }, [refreshHistory, userId]);
+
+  const logMoveDebounced = useCallback(async (success, detail = '') => {
+    if (!userId) return;
+
+    const nextTimestamp = shouldLogMove(lastMoveLogAtRef.current);
+    if (!nextTimestamp) return;
+
+    lastMoveLogAtRef.current = nextTimestamp;
+    await saveLocalCommand(userId, 'move', success, detail);
+  }, [userId]);
+
   const executeTrackedCommand = useCallback(async (actionLabel, executor, options = {}) => {
     const {
       refresh = true,
-      refreshDelayMs = 350,
+      log = true,
+      debounceMove = false,
+      refreshDelayMs = 150,
     } = options;
 
-    const result = await executor();
-    if (refresh) {
-      scheduleHistoryRefresh(refreshDelayMs);
+    if (!userId) {
+      return executor();
     }
-    return {
-      action: actionLabel,
-      result,
-    };
-  }, [scheduleHistoryRefresh]);
+
+    try {
+      const result = await executor();
+
+      if (log) {
+        if (debounceMove) {
+          await logMoveDebounced(true);
+        } else {
+          await saveLocalCommand(userId, actionLabel, true);
+        }
+      }
+      if (refresh) {
+        scheduleHistoryRefresh(refreshDelayMs);
+      }
+
+      return {
+        action: actionLabel,
+        result,
+      };
+    } catch (error) {
+      const detail = error?.message || '';
+
+      if (log) {
+        if (debounceMove) {
+          await logMoveDebounced(false, detail);
+        } else {
+          await saveLocalCommand(userId, actionLabel, false, detail);
+        }
+      }
+      if (refresh) {
+        scheduleHistoryRefresh(refreshDelayMs);
+      }
+      throw error;
+    }
+  }, [logMoveDebounced, scheduleHistoryRefresh, userId]);
 
   const sendMove = useCallback((vx, vy, vyaw) => (
-    executeTrackedCommand('move', () => moveRobot(vx, vy, vyaw), { refresh: false })
+    executeTrackedCommand('move', () => moveRobot(vx, vy, vyaw), {
+      refresh: false,
+      log: true,
+      debounceMove: true,
+    })
   ), [executeTrackedCommand]);
 
   const sendStop = useCallback(() => (
