@@ -45,7 +45,7 @@ export default function CommandHistoryScreen() {
     >
       <View style={styles.header}>
         <Text style={styles.title}>Historial</Text>
-        <Text style={styles.subtitle}>Comandos recuperados desde el servidor</Text>
+        <Text style={styles.subtitle}>Comandos guardados en tu cuenta en este dispositivo</Text>
       </View>
 
       {historyError ? (
@@ -57,7 +57,7 @@ export default function CommandHistoryScreen() {
       {loadingHistory && history.length === 0 ? (
         <View style={styles.centered}>
           <ActivityIndicator size="large" color={colors.primary} />
-          <Text style={styles.loadingText}>Consultando historial...</Text>
+          <Text style={styles.loadingText}>Cargando historial...</Text>
         </View>
       ) : null}
 
@@ -65,7 +65,7 @@ export default function CommandHistoryScreen() {
         <View style={styles.emptyState}>
           <Text style={styles.emptyTitle}>Todavia no hay comandos registrados</Text>
           <Text style={styles.emptySubtitle}>
-            Cuando ejecutes acciones del robot, apareceran asociadas a tu cuenta.
+            Cuando ejecutes acciones del robot, quedaran registradas asociadas a tu usuario.
           </Text>
         </View>
       ) : null}
