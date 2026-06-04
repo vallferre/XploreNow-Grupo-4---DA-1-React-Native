@@ -21,7 +21,7 @@ export default function AuthInput({
         value={value}
         onChangeText={onChangeText}
         placeholder={placeholder}
-        placeholderTextColor={colors.placeholder}
+        placeholderTextColor="#647084"
         secureTextEntry={secureTextEntry}
         keyboardType={keyboardType}
         autoCapitalize={autoCapitalize}
@@ -39,19 +39,19 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: 14,
-    fontWeight: '600',
-    color: colors.text,
+    fontWeight: '700',
+    color: colors.white,
     marginBottom: 6,
   },
   input: {
     borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: '#2D3A50',
     borderRadius: 10,
     paddingHorizontal: 14,
     paddingVertical: 12,
     fontSize: 15,
-    color: colors.text,
-    backgroundColor: colors.surface,
+    color: colors.white,
+    backgroundColor: '#101827',
   },
   inputError: {
     borderColor: colors.error,

@@ -33,11 +33,11 @@ const styles = StyleSheet.create({
   line: {
     flex: 1,
     height: 1,
-    backgroundColor: colors.border,
+    backgroundColor: '#233044',
   },
   orText: {
     marginHorizontal: 10,
-    color: colors.textSecondary,
+    color: '#A8B3C7',
     fontSize: 13,
   },
   button: {
