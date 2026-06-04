@@ -153,7 +153,7 @@ export default function LoginScreen({ navigation, route }) {
 const styles = StyleSheet.create({
   flex: {
     flex: 1,
-    backgroundColor: colors.background,
+    backgroundColor: '#07111F',
   },
   container: {
     flexGrow: 1,
@@ -168,44 +168,45 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 32,
     fontWeight: '800',
-    color: colors.primary,
+    color: colors.white,
     letterSpacing: 0.5,
   },
   subtitle: {
     fontSize: 15,
-    color: colors.textSecondary,
+    color: '#A8B3C7',
     marginTop: 6,
   },
   form: {
-    backgroundColor: colors.surface,
-    borderRadius: 16,
+    backgroundColor: '#101827',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#233044',
     padding: 24,
-    shadowColor: colors.black,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 8,
-    elevation: 3,
   },
   successBox: {
-    backgroundColor: colors.successLight,
+    backgroundColor: '#102F20',
     borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#50E38A44',
     padding: 12,
     marginBottom: 16,
   },
   successText: {
-    color: colors.success,
+    color: '#50E38A',
     fontSize: 13,
     textAlign: 'center',
     fontWeight: '600',
   },
   apiErrorBox: {
-    backgroundColor: colors.errorLight,
+    backgroundColor: '#37161B',
     borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#FF6B6B44',
     padding: 12,
     marginBottom: 12,
   },
   apiErrorText: {
-    color: colors.error,
+    color: '#FF8A8A',
     fontSize: 13,
     textAlign: 'center',
   },
@@ -215,7 +216,7 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
   footerText: {
-    color: colors.textSecondary,
+    color: '#A8B3C7',
     fontSize: 14,
   },
   link: {

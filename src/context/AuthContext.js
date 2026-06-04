@@ -48,9 +48,13 @@ export function AuthProvider({ children }) {
     setToken(userToken);
   }, []);
 
-  const register = useCallback(async (username, email, password) => {
-    await apiRegister(username, email, password);
-  }, []);
+  const register = useCallback(
+    async (username, email, password) => {
+      await apiRegister(username, email, password);
+      await login(email, password);
+    },
+    [login]
+  );
 
   const logout = useCallback(async () => {
     await AsyncStorage.removeItem(SESSION_KEY);

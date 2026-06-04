@@ -34,8 +34,6 @@ export default function RegisterScreen({ navigation }) {
     setLoading(true);
     try {
       await register(username.trim(), email.trim().toLowerCase(), password);
-      // Registro exitoso → redirigir al Login (con mensaje de éxito)
-      navigation.replace('Login', { registered: true });
     } catch (err) {
       const msg =
         err?.response?.data?.message ||
@@ -119,7 +117,7 @@ export default function RegisterScreen({ navigation }) {
 const styles = StyleSheet.create({
   flex: {
     flex: 1,
-    backgroundColor: colors.background,
+    backgroundColor: '#07111F',
   },
   container: {
     flexGrow: 1,
@@ -134,32 +132,31 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 28,
     fontWeight: '800',
-    color: colors.primary,
+    color: colors.white,
   },
   subtitle: {
     fontSize: 15,
-    color: colors.textSecondary,
+    color: '#A8B3C7',
     marginTop: 6,
     textAlign: 'center',
   },
   form: {
-    backgroundColor: colors.surface,
-    borderRadius: 16,
+    backgroundColor: '#101827',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#233044',
     padding: 24,
-    shadowColor: colors.black,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 8,
-    elevation: 3,
   },
   apiErrorBox: {
-    backgroundColor: colors.errorLight,
+    backgroundColor: '#37161B',
     borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#FF6B6B44',
     padding: 12,
     marginBottom: 12,
   },
   apiErrorText: {
-    color: colors.error,
+    color: '#FF8A8A',
     fontSize: 13,
     textAlign: 'center',
   },
@@ -169,7 +166,7 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
   footerText: {
-    color: colors.textSecondary,
+    color: '#A8B3C7',
     fontSize: 14,
   },
   link: {
