@@ -15,18 +15,18 @@ import colors from '../config/colors';
 import ActionsModal from '../components/ActionsModal';
 
 const MOVE_INTERVAL_MS = 150;
-const MAX_SPEED = 0.8;
 const JOY_R = 82;
 const JOY_THUMB_R = 28;
 const JOY_MAX_DIST = JOY_R - JOY_THUMB_R;
 const DPAD_BTN = 52;
 const DPAD_GAP = 6;
 
+// Vectores unitarios: la magnitud final se escala por la sensibilidad elegida (ver Perfil)
 const DPAD = [
-  { key: 'fwd', label: '▲', vx: 0.5,  vy: 0, vyaw: 0    },
-  { key: 'bck', label: '▼', vx: -0.5, vy: 0, vyaw: 0    },
-  { key: 'lft', label: '◄', vx: 0,    vy: 0, vyaw: 0.5  },
-  { key: 'rgt', label: '►', vx: 0,    vy: 0, vyaw: -0.5 },
+  { key: 'fwd', label: '▲', vx: 1,  vy: 0, vyaw: 0  },
+  { key: 'bck', label: '▼', vx: -1, vy: 0, vyaw: 0  },
+  { key: 'lft', label: '◄', vx: 0,  vy: 0, vyaw: 1  },
+  { key: 'rgt', label: '►', vx: 0,  vy: 0, vyaw: -1 },
 ];
 
 function DpadButton({ action, disabled, onPressIn, onPressOut }) {
@@ -68,7 +68,7 @@ function Joystick({ thumbAnim, panHandlers, label, valLine, tint, disabled }) {
 }
 
 export default function MovementControlScreen() {
-  const { isConnected, connectionState } = useRobotConnection();
+  const { isConnected, connectionState, sensitivity } = useRobotConnection();
   const { sendMove, sendStop } = useCommandHistory();
   const [feedback, setFeedback] = useState(null);
   const [leftDisplay, setLeftDisplay] = useState({ vx: 0, vy: 0 });
@@ -83,6 +83,14 @@ export default function MovementControlScreen() {
   const rightVals         = useRef({ vyaw: 0 });
   const leftThumb         = useRef(new Animated.ValueXY()).current;
   const rightThumb        = useRef(new Animated.ValueXY()).current;
+  const sensitivityRef    = useRef(sensitivity);
+
+  // La sensibilidad se ajusta desde el Perfil (contexto compartido); acá solo
+  // mantenemos el ref sincronizado para lectura en tiempo real dentro de
+  // los PanResponder/intervalos (evita closures viejas).
+  useEffect(() => {
+    sensitivityRef.current = sensitivity;
+  }, [sensitivity]);
 
   // Lock orientation to landscape on enter, restore on leave
   useEffect(() => {
@@ -159,9 +167,10 @@ export default function MovementControlScreen() {
         const cx = dx * ratio;
         const cy = dy * ratio;
         leftThumb.setValue({ x: cx, y: cy });
+        const s = sensitivityRef.current;
         const vals = {
-          vx: parseFloat((-cy / JOY_MAX_DIST * MAX_SPEED).toFixed(2)),
-          vy: parseFloat(( cx / JOY_MAX_DIST * MAX_SPEED).toFixed(2)),
+          vx: parseFloat((-cy / JOY_MAX_DIST * s).toFixed(2)),
+          vy: parseFloat((-cx / JOY_MAX_DIST * s).toFixed(2)),
         };
         leftVals.current = vals;
         setLeftDisplay(vals);
@@ -182,7 +191,7 @@ export default function MovementControlScreen() {
         const cx = dx * ratio;
         const cy = dy * ratio;
         rightThumb.setValue({ x: cx, y: cy });
-        const vals = { vyaw: parseFloat((-cx / JOY_MAX_DIST * MAX_SPEED).toFixed(2)) };
+        const vals = { vyaw: parseFloat((-cx / JOY_MAX_DIST * sensitivityRef.current).toFixed(2)) };
         rightVals.current = vals;
         setRightDisplay(vals);
       },
@@ -194,10 +203,12 @@ export default function MovementControlScreen() {
   // D-Pad: hold to move, release to stop
   const handleDpadIn = useCallback((action) => {
     if (!isConnected) return;
-    sendMove(action.vx, action.vy, action.vyaw).catch(() => {});
-    dpadIntervalRef.current = setInterval(() => {
-      sendMove(action.vx, action.vy, action.vyaw).catch(() => {});
-    }, MOVE_INTERVAL_MS);
+    const send = () => {
+      const s = sensitivityRef.current;
+      sendMove(action.vx * s, action.vy * s, action.vyaw * s).catch(() => {});
+    };
+    send();
+    dpadIntervalRef.current = setInterval(send, MOVE_INTERVAL_MS);
   }, [isConnected, sendMove]);
 
   const handleDpadOut = useCallback(() => {
