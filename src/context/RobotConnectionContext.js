@@ -17,6 +17,15 @@ const STORAGE_KEY = '@xplore_robot_connection';
 const DEFAULT_ROBOT_TYPE = 'go2';
 const DEFAULT_NETWORK_INTERFACE = 'eth0';
 
+export const SENSITIVITY_KEY = '@xplore_movement_sensitivity';
+export const SENSITIVITY_MIN = 0.2;
+export const SENSITIVITY_MAX = 1.0;
+export const SENSITIVITY_STEP = 0.1;
+export const SENSITIVITY_DEFAULT = 0.6;
+
+export const clampSensitivity = (value) =>
+  Math.min(SENSITIVITY_MAX, Math.max(SENSITIVITY_MIN, parseFloat(Number(value).toFixed(1))));
+
 export const RobotConnectionContext = createContext(null);
 
 const normalizeInterface = (value = '') => String(value).trim() || DEFAULT_NETWORK_INTERFACE;
@@ -43,6 +52,7 @@ export function RobotConnectionProvider({ children }) {
   const [loading, setLoading] = useState(false);
   const [autoReconnect, setAutoReconnect] = useState(false);
   const [settingsLoaded, setSettingsLoaded] = useState(false);
+  const [sensitivity, setSensitivity] = useState(SENSITIVITY_DEFAULT);
 
   const reconnectingRef = useRef(false);
 
@@ -68,6 +78,25 @@ export function RobotConnectionProvider({ children }) {
     };
 
     loadSettings();
+  }, []);
+
+  useEffect(() => {
+    AsyncStorage.getItem(SENSITIVITY_KEY)
+      .then((stored) => {
+        const parsed = parseFloat(stored);
+        if (!Number.isNaN(parsed)) {
+          setSensitivity(clampSensitivity(parsed));
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    AsyncStorage.setItem(SENSITIVITY_KEY, String(sensitivity)).catch(() => {});
+  }, [sensitivity]);
+
+  const adjustSensitivity = useCallback((delta) => {
+    setSensitivity((prev) => clampSensitivity(prev + delta));
   }, []);
 
   useEffect(() => {
@@ -222,7 +251,14 @@ export function RobotConnectionProvider({ children }) {
     connect,
     disconnect,
     refreshStatus,
+    sensitivity,
+    setSensitivity,
+    adjustSensitivity,
+    sensitivityMin: SENSITIVITY_MIN,
+    sensitivityMax: SENSITIVITY_MAX,
+    sensitivityStep: SENSITIVITY_STEP,
   }), [
+    adjustSensitivity,
     autoReconnect,
     connect,
     connectionState,
@@ -232,6 +268,7 @@ export function RobotConnectionProvider({ children }) {
     networkInterface,
     refreshStatus,
     robotType,
+    sensitivity,
     statusJson,
   ]);
 
