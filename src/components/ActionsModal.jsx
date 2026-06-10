@@ -12,8 +12,19 @@ import colors from '../config/colors';
 import { getAvailableActions } from '../services/robotService';
 import { useCommandHistory } from '../hooks/useCommandHistory';
 
-/** Siempre visibles en el modal; usan /standup y /sitdown, no /action/{name}. */
+/** Siempre visibles; usan endpoints propios, no /action/{name}. */
 const POSTURE_ACTIONS = ['standup', 'sitdown'];
+
+/** Endpoints separados del Go2; solo se muestran cuando robot_type === 'go2'. */
+const GO2_MODE_ACTIONS = [
+  'damp',
+  'handstand',
+  'freebound',
+  'freejump',
+  'freeavoid',
+  'walkupright',
+  'crossstep',
+];
 
 const MODAL_ORIENTATIONS = [
   'portrait',
@@ -57,6 +68,13 @@ const ACTION_LABELS = {
   reject: 'Rechazar',
   right_kiss: 'Beso derecho',
   two_hand_kiss: 'Beso con dos manos',
+  damp: 'Modo seguro',
+  handstand: 'Parado de manos',
+  freebound: 'Salto (bound)',
+  freejump: 'Salto libre',
+  freeavoid: 'Evasión libre',
+  walkupright: 'Caminar erguido',
+  crossstep: 'Paso cruzado',
 };
 
 const ACTION_ACCENTS = {
@@ -93,6 +111,13 @@ const ACTION_ACCENTS = {
   reject:         '#FF6B6B',
   right_kiss:     '#E91E63',
   two_hand_kiss:  '#E91E63',
+  damp:           '#FF6B6B',
+  handstand:      '#F5A623',
+  freebound:      '#E91E63',
+  freejump:       '#E91E63',
+  freeavoid:      '#50E38A',
+  walkupright:    '#1A73E8',
+  crossstep:      '#7C3AED',
 };
 
 const DEFAULT_ACCENT = '#2D3A50';
@@ -155,12 +180,17 @@ function ActionCard({ name, executing, disabled, onPress }) {
 }
 
 export default function ActionsModal({ visible, onClose, isConnected, onFeedback }) {
-  const { sendAction, sendStandUp, sendSitDown } = useCommandHistory();
+  const { sendRobotCommand } = useCommandHistory();
   const [actions, setActions] = useState([]);
   const [robotType, setRobotType] = useState('');
   const [loading, setLoading] = useState(false);
   const [loadError, setLoadError] = useState('');
   const [executing, setExecuting] = useState(null);
+
+  const modeActions = robotType === 'go2' ? GO2_MODE_ACTIONS : [];
+  const apiActions = actions.filter((item) => (
+    !POSTURE_ACTIONS.includes(item) && !GO2_MODE_ACTIONS.includes(item)
+  ));
 
   const loadActions = useCallback(async () => {
     setLoading(true);
@@ -193,31 +223,17 @@ export default function ActionsModal({ visible, onClose, isConnected, onFeedback
   const handleExecute = async (name) => {
     setExecuting(name);
     try {
-      if (name === 'standup') {
-        await sendStandUp();
-        onFeedback?.('success', 'Robot parado');
-      } else if (name === 'sitdown') {
-        await sendSitDown();
-        onFeedback?.('success', 'Robot sentado');
-      } else {
-        await sendAction(name);
-        onFeedback?.('success', `${formatActionLabel(name)} ejecutada`);
-      }
+      await sendRobotCommand(name);
+      onFeedback?.('success', `${formatActionLabel(name)} ejecutada`);
       onClose();
     } catch {
-      if (name === 'standup') {
-        onFeedback?.('error', 'Error al pararse');
-      } else if (name === 'sitdown') {
-        onFeedback?.('error', 'Error al sentarse');
-      } else {
-        onFeedback?.('error', `Error al ejecutar ${formatActionLabel(name)}`);
-      }
+      onFeedback?.('error', `Error al ejecutar ${formatActionLabel(name)}`);
     } finally {
       setExecuting(null);
     }
   };
 
-  const totalCount = POSTURE_ACTIONS.length + actions.length;
+  const totalCount = POSTURE_ACTIONS.length + modeActions.length + apiActions.length;
   const robotLabel = robotType === 'go2' ? 'Unitree Go2' : robotType === 'g1' ? 'Unitree G1' : 'Robot';
 
   return (
@@ -279,7 +295,16 @@ export default function ActionsModal({ visible, onClose, isConnected, onFeedback
                   onPress={handleExecute}
                 />
               ))}
-              {actions.map((item) => (
+              {modeActions.map((item) => (
+                <ActionCard
+                  key={item}
+                  name={item}
+                  executing={executing}
+                  disabled={executing !== null}
+                  onPress={handleExecute}
+                />
+              ))}
+              {apiActions.map((item) => (
                 <ActionCard
                   key={item}
                   name={item}
@@ -290,7 +315,7 @@ export default function ActionsModal({ visible, onClose, isConnected, onFeedback
               ))}
             </View>
 
-            {!loading && !loadError && actions.length === 0 ? (
+            {!loading && !loadError && apiActions.length === 0 && modeActions.length === 0 ? (
               <Text style={styles.emptyExtraHint}>
                 No hay más acciones predefinidas para este robot.
               </Text>

@@ -6,7 +6,6 @@ import {
   ScrollView,
   StyleSheet,
   Text,
-  TextInput,
   TouchableOpacity,
   View,
 } from 'react-native';
@@ -63,8 +62,6 @@ export default function ConnectionScreen({ navigation }) {
   const {
     robotType,
     setRobotType,
-    networkInterface,
-    setNetworkInterface,
     connectionState,
     error,
     loading,
@@ -267,23 +264,10 @@ export default function ConnectionScreen({ navigation }) {
           })}
         </View>
 
-        <View style={styles.fieldGroup}>
-          <Text style={styles.label}>Interfaz de red</Text>
-          <TextInput
-            style={styles.input}
-            value={networkInterface}
-            onChangeText={setNetworkInterface}
-            placeholder="eth0"
-            placeholderTextColor={colors.placeholder}
-            autoCapitalize="none"
-            autoCorrect={false}
-          />
-        </View>
-
         <View style={styles.selectionSummary}>
           <Text style={styles.selectionLabel}>Configuracion seleccionada</Text>
           <Text style={styles.selectionText}>
-            Robot {selectedRobot.title} por interfaz {networkInterface.trim() || 'eth0'}
+            Robot {selectedRobot.title}
           </Text>
           <Text style={styles.reconnectText}>
             Reconexion automatica: {autoReconnect ? 'activada' : 'desactivada'}
@@ -546,25 +530,6 @@ const styles = StyleSheet.create({
   },
   robotTextLocked: {
     color: '#647084',
-  },
-  fieldGroup: {
-    marginBottom: 14,
-  },
-  label: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: colors.white,
-    marginBottom: 6,
-  },
-  input: {
-    borderWidth: 1,
-    borderColor: '#2D3A50',
-    borderRadius: 10,
-    backgroundColor: '#101827',
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-    fontSize: 15,
-    color: colors.white,
   },
   selectionSummary: {
     backgroundColor: '#101827',
