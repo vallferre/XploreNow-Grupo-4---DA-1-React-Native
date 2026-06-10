@@ -6,7 +6,24 @@ import React, {
   useRef,
   useState,
 } from 'react';
-import { executeAction, moveRobot, sitDown, standUp, stopRobot } from '../services/robotService';
+import {
+  dampRobot,
+  executeAction,
+  moveRobot,
+  setRobotMode,
+  sitDown,
+  standUp,
+  stopRobot,
+} from '../services/robotService';
+
+const GO2_TOGGLE_MODES = new Set([
+  'handstand',
+  'freebound',
+  'freeavoid',
+  'walkupright',
+  'crossstep',
+  'freejump',
+]);
 import {
   loadLocalHistory,
   saveLocalCommand,
@@ -141,6 +158,22 @@ export function CommandHistoryProvider({ children }) {
     executeTrackedCommand(actionName, () => executeAction(actionName))
   ), [executeTrackedCommand]);
 
+  const sendRobotCommand = useCallback((actionName) => {
+    if (actionName === 'standup') {
+      return sendStandUp();
+    }
+    if (actionName === 'sitdown') {
+      return sendSitDown();
+    }
+    if (actionName === 'damp') {
+      return executeTrackedCommand('damp', () => dampRobot());
+    }
+    if (GO2_TOGGLE_MODES.has(actionName)) {
+      return executeTrackedCommand(actionName, () => setRobotMode(actionName, true));
+    }
+    return sendAction(actionName);
+  }, [executeTrackedCommand, sendAction, sendSitDown, sendStandUp]);
+
   const value = useMemo(() => ({
     history,
     loadingHistory,
@@ -151,12 +184,14 @@ export function CommandHistoryProvider({ children }) {
     sendStandUp,
     sendSitDown,
     sendAction,
+    sendRobotCommand,
   }), [
     history,
     historyError,
     loadingHistory,
     refreshHistory,
     sendAction,
+    sendRobotCommand,
     sendMove,
     sendSitDown,
     sendStandUp,

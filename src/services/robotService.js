@@ -5,10 +5,9 @@ export const getStatus = async () => {
   return response.data;
 };
 
-export const connectRobot = async (robotType, networkInterface) => {
+export const connectRobot = async (robotType) => {
   const response = await api.post('/connect', {
     robot_type: robotType,
-    network_interface: networkInterface,
   });
   return response.data;
 };
@@ -45,5 +44,16 @@ export const getAvailableActions = async () => {
 
 export const executeAction = async (actionName) => {
   const response = await api.post(`/action/${actionName}`);
+  return response.data;
+};
+
+export const dampRobot = async () => {
+  const response = await api.post('/damp');
+  return response.data;
+};
+
+/** Modos Go2 con body { enable }. Por defecto activa el modo. */
+export const setRobotMode = async (mode, enable = true) => {
+  const response = await api.post(`/${mode}`, { enable });
   return response.data;
 };
