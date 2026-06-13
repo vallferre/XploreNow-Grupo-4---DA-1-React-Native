@@ -1,6 +1,7 @@
 import React from 'react';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import colors from '../config/colors';
+import ApiHealthButton from '../components/ApiHealthButton';
 import { useAuth } from '../hooks/useAuth';
 import { useRobotConnection } from '../hooks/useRobotConnection';
 
@@ -37,6 +38,14 @@ export default function ProfileScreen({ navigation }) {
           <Text style={styles.label}>Sesion</Text>
           <Text style={styles.value}>Activa</Text>
         </View>
+      </View>
+
+      <View style={styles.card}>
+        <Text style={styles.cardTitle}>Estado de la API</Text>
+        <Text style={styles.apiHint}>
+          Verifica que el dispositivo pueda comunicarse con el servidor.
+        </Text>
+        <ApiHealthButton />
       </View>
 
       <View style={styles.card}>
@@ -137,6 +146,11 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '900',
     marginBottom: 12,
+  },
+  apiHint: {
+    color: '#A8B3C7',
+    fontSize: 13,
+    marginBottom: 4,
   },
   row: {
     borderTopWidth: 1,

@@ -1,7 +1,9 @@
 import axios from 'axios';
 
 // Cambiar por la IP que indique la catedra o por la IP LAN de la PC que corre la API.
-const BASE_URL = 'http://192.168.137.78:8000';
+export const BASE_URL = 'http://192.168.1.228:8000';
+
+export const getBaseUrl = async () => BASE_URL;
 
 const api = axios.create({
   baseURL: BASE_URL,
@@ -13,9 +15,18 @@ const api = axios.create({
 
 let unauthorizedHandler = null;
 
-// Interceptor para agregar el token a todas las requests autenticadas
 api.interceptors.request.use(
-  (config) => config,
+  async (config) => {
+    config.baseURL = await getBaseUrl();
+
+    if (__DEV__) {
+      console.log(
+        `[Request] ${config.method?.toUpperCase()} ${config.baseURL}${config.url}`
+      );
+    }
+
+    return config;
+  },
   (error) => Promise.reject(error)
 );
 
