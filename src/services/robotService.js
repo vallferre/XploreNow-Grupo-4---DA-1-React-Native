@@ -1,5 +1,10 @@
 import api from './authService';
 
+export const pingApi = async () => {
+  const response = await api.get('/ping');
+  return response.data;
+};
+
 export const getStatus = async () => {
   const response = await api.get('/status');
   return response.data;

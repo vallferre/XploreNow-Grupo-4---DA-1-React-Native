@@ -14,6 +14,7 @@ import { useBiometric } from '../hooks/useBiometric';
 import AuthInput from '../components/AuthInput';
 import PrimaryButton from '../components/PrimaryButton';
 import BiometricButton from '../components/BiometricButton';
+import ApiHealthButton from '../components/ApiHealthButton';
 import colors from '../config/colors';
 import { validateLoginForm } from '../utils/validators';
 
@@ -132,6 +133,8 @@ export default function LoginScreen({ navigation, route }) {
           ) : null}
 
           <PrimaryButton title="Iniciar sesión" onPress={handleLogin} loading={loading} />
+
+          <ApiHealthButton />
 
           {/* Botón de biometría: visible solo si el hardware está disponible y el usuario lo activó */}
           {available && enabled ? (
