@@ -11,12 +11,7 @@ export const isBiometricAvailable = async () => {
   return enrolled;
 };
 
-// Devuelve el tipo de biometría disponible para mostrar el label correcto
-export const getBiometricLabel = async () => {
-  const types = await LocalAuthentication.supportedAuthenticationTypesAsync();
-  const hasFaceId = types.includes(LocalAuthentication.AuthenticationType.FACIAL_RECOGNITION);
-  return hasFaceId ? 'Face ID' : 'Huella dactilar';
-};
+export const getBiometricLabel = async () => 'Biometría';
 
 export const authenticate = async () => {
   const label = await getBiometricLabel();
