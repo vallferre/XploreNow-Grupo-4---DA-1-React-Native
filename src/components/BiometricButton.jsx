@@ -12,9 +12,7 @@ export default function BiometricButton({ label, onPress }) {
       </View>
 
       <TouchableOpacity style={styles.button} onPress={onPress} activeOpacity={0.75}>
-        <Text style={styles.icon}>
-          {label === 'Face ID' ? '🪪' : '🫆'}
-        </Text>
+        <Text style={styles.icon}>🔐</Text>
         <Text style={styles.label}>Iniciar sesión con {label}</Text>
       </TouchableOpacity>
     </View>
