@@ -15,6 +15,7 @@ import {
 
 const STORAGE_KEY = '@xplore_robot_connection';
 const DEFAULT_ROBOT_TYPE = 'go2';
+export const DEFAULT_NETWORK_INTERFACE = 'eth0';
 
 export const SENSITIVITY_KEY = '@xplore_movement_sensitivity';
 export const SENSITIVITY_MIN = 0.2;
@@ -26,6 +27,9 @@ export const clampSensitivity = (value) =>
   Math.min(SENSITIVITY_MAX, Math.max(SENSITIVITY_MIN, parseFloat(Number(value).toFixed(1))));
 
 export const RobotConnectionContext = createContext(null);
+
+const normalizeInterface = (value = '') =>
+  String(value).trim() || DEFAULT_NETWORK_INTERFACE;
 
 const getErrorMessage = (error) => {
   const status = error?.response?.status;
@@ -42,6 +46,7 @@ const getErrorMessage = (error) => {
 
 export function RobotConnectionProvider({ children }) {
   const [robotType, setRobotType] = useState(DEFAULT_ROBOT_TYPE);
+  const [networkInterface, setNetworkInterface] = useState(DEFAULT_NETWORK_INTERFACE);
   const [connectionState, setConnectionState] = useState('disconnected');
   const [statusJson, setStatusJson] = useState(null);
   const [error, setError] = useState('');
@@ -60,6 +65,9 @@ export function RobotConnectionProvider({ children }) {
           const config = JSON.parse(stored);
           if (config.robotType === 'go2' || config.robotType === 'g1') {
             setRobotType(config.robotType);
+          }
+          if (typeof config.networkInterface === 'string') {
+            setNetworkInterface(normalizeInterface(config.networkInterface));
           }
           setAutoReconnect(config.autoReconnect === true);
         }
@@ -97,9 +105,9 @@ export function RobotConnectionProvider({ children }) {
 
     AsyncStorage.setItem(
       STORAGE_KEY,
-      JSON.stringify({ robotType, autoReconnect })
+      JSON.stringify({ robotType, networkInterface, autoReconnect })
     ).catch(() => {});
-  }, [autoReconnect, robotType, settingsLoaded]);
+  }, [autoReconnect, networkInterface, robotType, settingsLoaded]);
 
   const applyStatus = useCallback((status) => {
     setStatusJson(status);
@@ -108,18 +116,23 @@ export function RobotConnectionProvider({ children }) {
     if (status?.robot_type === 'go2' || status?.robot_type === 'g1') {
       setRobotType(status.robot_type);
     }
+    if (status?.network_interface) {
+      setNetworkInterface(status.network_interface);
+    }
     setError(status?.last_error || '');
   }, []);
 
   const connect = useCallback(async ({ manual = true } = {}) => {
+    const iface = normalizeInterface(networkInterface);
     setLoading(true);
     setError('');
 
     try {
-      const response = await apiConnectRobot(robotType);
+      const response = await apiConnectRobot(robotType, iface);
       const connectedStatus = {
         connection_state: 'connected',
         robot_type: response.robot_type,
+        network_interface: iface,
         connected_at: response.connected_at,
         last_error: null,
       };
@@ -143,7 +156,7 @@ export function RobotConnectionProvider({ children }) {
     } finally {
       setLoading(false);
     }
-  }, [applyStatus, robotType]);
+  }, [applyStatus, networkInterface, robotType]);
 
   const disconnect = useCallback(async () => {
     setLoading(true);
@@ -155,6 +168,7 @@ export function RobotConnectionProvider({ children }) {
       const disconnectedStatus = {
         connection_state: 'disconnected',
         robot_type: null,
+        network_interface: null,
         connected_at: null,
         last_error: null,
       };
@@ -165,6 +179,7 @@ export function RobotConnectionProvider({ children }) {
         const disconnectedStatus = {
           connection_state: 'disconnected',
           robot_type: null,
+          network_interface: null,
           connected_at: null,
           last_error: null,
         };
@@ -226,6 +241,8 @@ export function RobotConnectionProvider({ children }) {
   const value = useMemo(() => ({
     robotType,
     setRobotType,
+    networkInterface,
+    setNetworkInterface,
     connectionState,
     statusJson,
     error,
@@ -249,6 +266,7 @@ export function RobotConnectionProvider({ children }) {
     disconnect,
     error,
     loading,
+    networkInterface,
     refreshStatus,
     robotType,
     sensitivity,

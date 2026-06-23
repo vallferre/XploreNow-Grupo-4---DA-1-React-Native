@@ -15,6 +15,7 @@ import PrimaryButton from '../components/PrimaryButton';
 import colors from '../config/colors';
 import { useAuth } from '../hooks/useAuth';
 import { useRobotConnection } from '../hooks/useRobotConnection';
+import { DEFAULT_NETWORK_INTERFACE } from '../context/RobotConnectionContext';
 
 const ROBOTS = [
   {
@@ -34,8 +35,6 @@ const ROBOTS = [
     image: require('../../assets/robot-g1.png'),
   },
 ];
-
-const DEFAULT_NETWORK_INTERFACE = 'eth0';
 
 const STATE_META = {
   connected: {
@@ -65,6 +64,8 @@ export default function ConnectionScreen({ navigation }) {
   const {
     robotType,
     setRobotType,
+    networkInterface,
+    setNetworkInterface,
     connectionState,
     error,
     loading,
@@ -76,7 +77,6 @@ export default function ConnectionScreen({ navigation }) {
   } = useRobotConnection();
 
   const [menuOpen, setMenuOpen] = useState(false);
-  const [networkInterface, setNetworkInterface] = useState(DEFAULT_NETWORK_INTERFACE);
   const headerProgress = useRef(new Animated.Value(0)).current;
 
   const displayInterface = networkInterface.trim() || DEFAULT_NETWORK_INTERFACE;
@@ -273,7 +273,7 @@ export default function ConnectionScreen({ navigation }) {
         <View style={styles.fieldGroup}>
           <Text style={styles.label}>Interfaz de red</Text>
           <Text style={styles.fieldHint}>
-            Valor por defecto: {DEFAULT_NETWORK_INTERFACE}. Lo configura el servidor al conectar.
+            Valor por defecto: {DEFAULT_NETWORK_INTERFACE}. Se envia al conectar y se actualiza con GET /status.
           </Text>
           <TextInput
             style={[styles.input, isConnected && styles.inputDisabled]}

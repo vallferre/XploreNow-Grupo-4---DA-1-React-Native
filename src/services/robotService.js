@@ -10,9 +10,10 @@ export const getStatus = async () => {
   return response.data;
 };
 
-export const connectRobot = async (robotType) => {
+export const connectRobot = async (robotType, networkInterface) => {
   const response = await api.post('/connect', {
     robot_type: robotType,
+    network_interface: networkInterface,
   });
   return response.data;
 };
