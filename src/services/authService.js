@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 // Cambiar por la IP que indique la catedra o por la IP LAN de la PC que corre la API.
-export const BASE_URL = 'http://192.168.1.252:8000';
+export const BASE_URL = 'http://192.168.1.27:8000';
 
 export const getBaseUrl = async () => BASE_URL;
 
