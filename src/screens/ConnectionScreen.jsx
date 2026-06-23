@@ -6,6 +6,7 @@ import {
   ScrollView,
   StyleSheet,
   Text,
+  TextInput,
   TouchableOpacity,
   View,
 } from 'react-native';
@@ -33,6 +34,8 @@ const ROBOTS = [
     image: require('../../assets/robot-g1.png'),
   },
 ];
+
+const DEFAULT_NETWORK_INTERFACE = 'eth0';
 
 const STATE_META = {
   connected: {
@@ -73,7 +76,10 @@ export default function ConnectionScreen({ navigation }) {
   } = useRobotConnection();
 
   const [menuOpen, setMenuOpen] = useState(false);
+  const [networkInterface, setNetworkInterface] = useState(DEFAULT_NETWORK_INTERFACE);
   const headerProgress = useRef(new Animated.Value(0)).current;
+
+  const displayInterface = networkInterface.trim() || DEFAULT_NETWORK_INTERFACE;
 
   useEffect(() => {
     Animated.timing(headerProgress, {
@@ -264,10 +270,27 @@ export default function ConnectionScreen({ navigation }) {
           })}
         </View>
 
+        <View style={styles.fieldGroup}>
+          <Text style={styles.label}>Interfaz de red</Text>
+          <Text style={styles.fieldHint}>
+            Valor por defecto: {DEFAULT_NETWORK_INTERFACE}. Lo configura el servidor al conectar.
+          </Text>
+          <TextInput
+            style={[styles.input, isConnected && styles.inputDisabled]}
+            value={networkInterface}
+            onChangeText={setNetworkInterface}
+            placeholder={DEFAULT_NETWORK_INTERFACE}
+            placeholderTextColor={colors.placeholder}
+            autoCapitalize="none"
+            autoCorrect={false}
+            editable={!isConnected}
+          />
+        </View>
+
         <View style={styles.selectionSummary}>
           <Text style={styles.selectionLabel}>Configuracion seleccionada</Text>
           <Text style={styles.selectionText}>
-            Robot {selectedRobot.title}
+            Robot {selectedRobot.title} · Interfaz {displayInterface}
           </Text>
           <Text style={styles.reconnectText}>
             Reconexion automatica: {autoReconnect ? 'activada' : 'desactivada'}
@@ -530,6 +553,33 @@ const styles = StyleSheet.create({
   },
   robotTextLocked: {
     color: '#647084',
+  },
+  fieldGroup: {
+    marginBottom: 14,
+  },
+  label: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: colors.white,
+    marginBottom: 4,
+  },
+  fieldHint: {
+    fontSize: 12,
+    color: '#A8B3C7',
+    marginBottom: 8,
+  },
+  input: {
+    borderWidth: 1,
+    borderColor: '#2D3A50',
+    borderRadius: 10,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    fontSize: 15,
+    color: colors.white,
+    backgroundColor: '#101827',
+  },
+  inputDisabled: {
+    opacity: 0.55,
   },
   selectionSummary: {
     backgroundColor: '#101827',
